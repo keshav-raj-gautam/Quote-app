@@ -34,11 +34,11 @@ pipeline {
         stage('Run kubernetes cluster'){
             steps{
                 sh '''
-                ssh -i /home/keshav/.ssh/k8s-key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null keshav@172.174.36.204 << 'ENDSSH'
-                set -e
+
+                ssh -i /home/keshav/.ssh/k8s-key -o StrictHostKeyChecking=no  keshav@172.174.36.204 << 'ENDSSH'
+                
                 sudo kind create cluster --name quote-cluster
 
-                # Navigate to Quote-app if exists, or clone if not
                 if [ ! -d "Quote-app/.git" ]; then
                   rm -rf Quote-app
                   git clone https://github.com/keshav-raj-gautam/Quote-app.git
@@ -48,10 +48,6 @@ pipeline {
                 
                 cd Quote-app/k8s
 
-                # Ensure kubeconfig is set (adapt this to your setup)
-                export KUBECONFIG=~/.kube/config
-
-                # Apply manifests
                 kubectl apply -f deployment.yml
                 kubectl apply -f service.yml
                 ENDSSH
