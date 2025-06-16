@@ -1,7 +1,7 @@
 # Quote-app
 End-to-end DevOps project using Terraform, Jenkins, Docker, and KIND on Azure. Automatically builds, tests, and deploys a Flask app that serves random motivational quotes via a Kubernetes cluster.
 
-## 🚀 How It Works
+##  How It Works
 
 ### 1. Infrastructure Setup (Terraform)
 - Provisions 3 Azure VMs:
@@ -22,7 +22,7 @@ End-to-end DevOps project using Terraform, Jenkins, Docker, and KIND on Azure. A
 
 ---
 
-## ⚙️ Prerequisites
+##  Prerequisites
 
 - Azure CLI & Terraform installed
 - Jenkins installed on master VM
