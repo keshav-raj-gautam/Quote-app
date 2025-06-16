@@ -156,7 +156,15 @@ resource "azurerm_linux_virtual_machine" "vms" {
   
 }
 
-output "vm_public_ips" {
-  description = "Public IP addresses of all VMs"
-  value       = [for i in range(length(azurerm_public_ip.pip)) : azurerm_public_ip.pip[i].ip_address]
+output "jenkins_master_ip" {
+  value = azurerm_public_ip.pip[0].ip_address
 }
+
+output "k8s_vm_ip" {
+  value = azurerm_public_ip.pip[1].ip_address
+}
+
+output "jenkins_agent_ip" {
+  value = azurerm_public_ip.pip[2].ip_address
+}
+
