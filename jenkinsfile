@@ -1,0 +1,63 @@
+pipeline {
+    agent { label 'Agent-1' }
+
+    stages {
+        stage('Clone repo') {
+            steps {
+                git url: 'https://github.com/keshav-raj-gautam/Quote-app.git', branch: 'main'
+                echo "Code cloning successful"
+            }
+        }
+
+        stage('Build docker image') {
+            steps {
+                sh "sudo docker build -t quotes:1.0 quote-api/"
+                echo "Image build successful"
+            }
+        }
+
+        stage('Push to dockerhub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'Docker-hub-login', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    script {
+                        sh 'echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin'
+                        sh 'sudo docker tag quotes:1.0 $DOCKER_USER/quotes:1.0'
+                        sh 'sudo docker push $DOCKER_USER/quotes:1.0'
+                    }
+                    
+                    echo "Pushed image to dockerhub"
+                }
+            
+            }
+            
+        }
+        stage('Run kubernetes cluster'){
+            steps{
+                sh '''
+                ssh -i /home/keshav/.ssh/k8s-key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null keshav@172.174.36.204 << 'ENDSSH'
+                set -e
+                sudo kind create cluster --name quote-cluster
+
+                # Navigate to Quote-app if exists, or clone if not
+                if [ ! -d "Quote-app/.git" ]; then
+                  rm -rf Quote-app
+                  git clone https://github.com/keshav-raj-gautam/Quote-app.git
+                else
+                  cd Quote-app && git pull && cd ..
+                fi
+                
+                cd Quote-app/k8s
+
+                # Ensure kubeconfig is set (adapt this to your setup)
+                export KUBECONFIG=~/.kube/config
+
+                # Apply manifests
+                kubectl apply -f deployment.yml
+                kubectl apply -f service.yml
+                ENDSSH
+                '''
+                echo "Cluster running successfully"
+            }
+        }
+    }
+}
